@@ -1,4 +1,4 @@
-﻿namespace PersonalFinanceManagmentProject.Entity
+﻿namespace PersonalFinanceManagmentProject.Entities
 {
     public enum Status : int
     {

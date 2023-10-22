@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PersonalFinanceManagmentProject.Entity;
+using PersonalFinanceManagmentProject.Entities;
 
 #nullable disable
 
 namespace PersonalFinanceManagmentProject.Migrations
 {
     [DbContext(typeof(PersonalFinanceManagmentDbContext))]
-    [Migration("20231022120643_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20231022130713_AddCreateDateToBill")]
+    partial class AddCreateDateToBill
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,15 +25,20 @@ namespace PersonalFinanceManagmentProject.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PersonalFinanceManagmentProject.Entity.Bill", b =>
+            modelBuilder.Entity("PersonalFinanceManagmentProject.Entities.Bill", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<double>("Amount")
                         .HasPrecision(14, 2)
                         .HasColumnType("float(14)");
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("LastUpdateDate")
                         .HasColumnType("datetime2");
@@ -48,11 +53,13 @@ namespace PersonalFinanceManagmentProject.Migrations
                     b.ToTable("Bills");
                 });
 
-            modelBuilder.Entity("PersonalFinanceManagmentProject.Entity.Category", b =>
+            modelBuilder.Entity("PersonalFinanceManagmentProject.Entities.Category", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Color")
                         .IsRequired()
@@ -74,21 +81,23 @@ namespace PersonalFinanceManagmentProject.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("PersonalFinanceManagmentProject.Entity.Transaction", b =>
+            modelBuilder.Entity("PersonalFinanceManagmentProject.Entities.Transaction", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<double>("Amount")
                         .HasPrecision(14, 2)
                         .HasColumnType("float(14)");
 
-                    b.Property<Guid>("BillId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("BillId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("Date")
                         .HasColumnType("datetime2");
@@ -110,15 +119,15 @@ namespace PersonalFinanceManagmentProject.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("PersonalFinanceManagmentProject.Entity.Transaction", b =>
+            modelBuilder.Entity("PersonalFinanceManagmentProject.Entities.Transaction", b =>
                 {
-                    b.HasOne("PersonalFinanceManagmentProject.Entity.Bill", "Bill")
+                    b.HasOne("PersonalFinanceManagmentProject.Entities.Bill", "Bill")
                         .WithMany("Transactions")
                         .HasForeignKey("BillId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PersonalFinanceManagmentProject.Entity.Category", "Category")
+                    b.HasOne("PersonalFinanceManagmentProject.Entities.Category", "Category")
                         .WithMany("Transactions")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -129,12 +138,12 @@ namespace PersonalFinanceManagmentProject.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("PersonalFinanceManagmentProject.Entity.Bill", b =>
+            modelBuilder.Entity("PersonalFinanceManagmentProject.Entities.Bill", b =>
                 {
                     b.Navigation("Transactions");
                 });
 
-            modelBuilder.Entity("PersonalFinanceManagmentProject.Entity.Category", b =>
+            modelBuilder.Entity("PersonalFinanceManagmentProject.Entities.Category", b =>
                 {
                     b.Navigation("Transactions");
                 });

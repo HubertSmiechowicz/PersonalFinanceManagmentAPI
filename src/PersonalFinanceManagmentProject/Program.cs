@@ -1,7 +1,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PersonalFinanceManagmentProject.Entity;
+using PersonalFinanceManagmentProject.Entities;
+using PersonalFinanceManagmentProject.Services;
+using PersonalFinanceManagmentProject.Services.Interfaces;
 
 namespace PersonalFinanceManagmentProject
 {
@@ -17,6 +19,8 @@ namespace PersonalFinanceManagmentProject
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddTransient<IBillService, BillService>();
+            builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<PersonalFinanceManagmentDbContext>(
                     option => option.UseSqlServer(builder.Configuration.GetConnectionString("PersonalFinanceManagmentConnectionString"))

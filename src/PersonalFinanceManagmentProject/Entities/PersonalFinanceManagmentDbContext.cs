@@ -1,13 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace PersonalFinanceManagmentProject.Entity
+namespace PersonalFinanceManagmentProject.Entities
 {
     public class PersonalFinanceManagmentDbContext : DbContext
     {
-        public DbSet<Bill> Bills { get; set; }
-        public DbSet<Category> Categories { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
+        public virtual DbSet<Bill> Bills { get; set; }
+        public virtual DbSet<Category> Categories { get; set; }
+        public virtual DbSet<Transaction> Transactions { get; set; }
+
+        public PersonalFinanceManagmentDbContext()
+        {
+
+        }
 
         public PersonalFinanceManagmentDbContext(DbContextOptions<PersonalFinanceManagmentDbContext> options) : base(options)
         {

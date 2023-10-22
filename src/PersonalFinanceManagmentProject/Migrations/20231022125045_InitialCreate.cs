@@ -15,7 +15,8 @@ namespace PersonalFinanceManagmentProject.Migrations
                 name: "Bills",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Amount = table.Column<double>(type: "float(14)", precision: 14, scale: 2, nullable: false),
                     LastUpdateDate = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -29,7 +30,8 @@ namespace PersonalFinanceManagmentProject.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Color = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Icon = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
@@ -43,13 +45,14 @@ namespace PersonalFinanceManagmentProject.Migrations
                 name: "Transactions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    BillId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BillId = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<double>(type: "float(14)", precision: 14, scale: 2, nullable: false),
-                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    CategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

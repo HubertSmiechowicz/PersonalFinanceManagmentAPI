@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PersonalFinanceManagmentProject.Entities;
 
@@ -11,9 +12,11 @@ using PersonalFinanceManagmentProject.Entities;
 namespace PersonalFinanceManagmentProject.Migrations
 {
     [DbContext(typeof(PersonalFinanceManagmentDbContext))]
-    partial class PersonalFinanceManagmentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231022125045_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,9 +36,6 @@ namespace PersonalFinanceManagmentProject.Migrations
                     b.Property<double>("Amount")
                         .HasPrecision(14, 2)
                         .HasColumnType("float(14)");
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("LastUpdateDate")
                         .HasColumnType("datetime2");

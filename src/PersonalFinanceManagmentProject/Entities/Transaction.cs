@@ -1,14 +1,14 @@
-﻿namespace PersonalFinanceManagmentProject.Entity
+﻿namespace PersonalFinanceManagmentProject.Entities
 {
     public class Transaction
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string? Name { get; set; }
         public DateTime? Date { get; set; }
         public Status Status { get; set; }
-        public Guid BillId { get; set; }
+        public int BillId { get; set; }
         public double Amount { get; set; }
-        public Guid CategoryId { get; set; }
+        public int CategoryId { get; set; }
         public Bill? Bill { get; set; }
         public Category? Category { get; set; }
     }
