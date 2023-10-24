@@ -28,21 +28,22 @@ namespace PersonalFinanceManagmentProject.Controllers
             return Ok(_billService.GetBills());
         }
 
-        [HttpGet("{id}")]
-        public ActionResult<BillExpandedDto> GetBillById([FromRoute]int id)
+        [HttpGet("single")]
+        public ActionResult<BillExpandedDto> GetBillById([FromQuery]int id)
         {
+            if (id == null) { return  BadRequest(); }
             return Ok(_billService.GetBillById(id));
         }
 
-        [HttpDelete("{id}")]
-        public ActionResult DeleteBill([FromRoute]int id) 
+        [HttpDelete]
+        public ActionResult DeleteBill([FromQuery]int id) 
         {
             _billService.DeleteBill(id);
-            return Ok();
+            return NoContent();
         }
 
-        [HttpPatch("{id}/{name}")]
-        public ActionResult<BillExpandedDto> ChangeBillName([FromRoute]int id, [FromRoute]string name) 
+        [HttpPatch]
+        public ActionResult<BillExpandedDto> ChangeBillName([FromQuery] int id, [FromQuery] string name) 
         {
             return Ok(_billService.ChangeBillName(id, name));
         }

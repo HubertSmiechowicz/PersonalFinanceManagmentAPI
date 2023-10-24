@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonalFinanceManagmentProject", "PersonalFinanceManagmentProject.csproj", "{D775FEEE-EB8A-4907-8A35-FDA89D9ACC8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PersonalFinanceManagmentProject", "PersonalFinanceManagmentProject.csproj", "{D775FEEE-EB8A-4907-8A35-FDA89D9ACC8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonalFinanceManagmentTests", "..\PersonalFinanceManagmentTests\PersonalFinanceManagmentTests.csproj", "{B58C1ED0-A6A3-4CD5-BBD3-33AF32847877}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PersonalFinanceManagmentTests", "..\PersonalFinanceManagmentTests\PersonalFinanceManagmentTests.csproj", "{B58C1ED0-A6A3-4CD5-BBD3-33AF32847877}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonalFinanceManagmentIntegrationTests", "..\PersonalFinanceManagmentIntegrationTests\PersonalFinanceManagmentIntegrationTests.csproj", "{C1DFDBAE-9A28-4A8A-98C1-D50615712E92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{B58C1ED0-A6A3-4CD5-BBD3-33AF32847877}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B58C1ED0-A6A3-4CD5-BBD3-33AF32847877}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B58C1ED0-A6A3-4CD5-BBD3-33AF32847877}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1DFDBAE-9A28-4A8A-98C1-D50615712E92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1DFDBAE-9A28-4A8A-98C1-D50615712E92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1DFDBAE-9A28-4A8A-98C1-D50615712E92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1DFDBAE-9A28-4A8A-98C1-D50615712E92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

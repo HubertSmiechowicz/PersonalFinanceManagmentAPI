@@ -46,3 +46,5 @@ namespace PersonalFinanceManagmentProject
         }
     }
 }
+
+public partial class Program { }
