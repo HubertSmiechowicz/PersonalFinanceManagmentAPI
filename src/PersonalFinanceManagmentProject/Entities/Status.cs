@@ -2,7 +2,7 @@
 {
     public enum Status : int
     {
-        REVENUES = 0,
-        EXPENSES = 1,
+        PAYMENTS = 0,
+        DEPOSITS = 1,
     }
 }

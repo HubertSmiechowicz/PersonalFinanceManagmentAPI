@@ -21,7 +21,7 @@ namespace PersonalFinanceManagmentProject.Services
 
         public BillExpandedDto AddBill(BillShortDto billDto)
         {
-            if (billDto == null) { throw new ArgumentNullException("Given bill is null!"); }
+            if (billDto == null) { throw new ParameterNullException(400, "Given bill in body is null!"); }
             var bill = _mapper.Map<Bill>(billDto);
             _dbContext.Add(bill);
             _dbContext.SaveChanges();
@@ -36,14 +36,14 @@ namespace PersonalFinanceManagmentProject.Services
         public BillExpandedDto GetBillById(int id)
         {
             var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == id);
-            if (bill == null) { throw new EntityNotFoundException("Bill of id: " + id + " was not found!", id); }
+            if (bill == null) { throw new EntityNotFoundException(404, "Bill of id: " + id + " was not found!", id); }
             return _mapper.Map<BillExpandedDto>(bill);
         }
 
         public void DeleteBill(int id) 
         {
             var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == id);
-            if (bill == null) { throw new EntityNotFoundException("Bill of id: " + id + " was not found!", id); }
+            if (bill == null) { throw new EntityNotFoundException(404, "Bill of id: " + id + " was not found!", id); }
             _dbContext.Remove(bill);
             _dbContext.SaveChanges();
         }
@@ -51,7 +51,7 @@ namespace PersonalFinanceManagmentProject.Services
         public BillExpandedDto ChangeBillName(int id, string name)
         {
             var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == id);
-            if (bill == null) { throw new EntityNotFoundException("Bill of id: " + id + " was not found!", id); }
+            if (bill == null) { throw new EntityNotFoundException(404, "Bill of id: " + id + " was not found!", id); }
             if (name.IsNullOrEmpty()) { throw new ArgumentNullException("Given name is null or empty!"); } 
             bill.Name = name;
             _dbContext.SaveChanges();
