@@ -21,4 +21,10 @@ public class CategoryService : ICategoryService
         _dbContext.Categories.Add(_mapper.Map<Category>(categoryDto));
         _dbContext.SaveChanges();
     }
+
+    public List<CategoryNameDto> GetCategoryNames()
+    {
+        var categoriesFromDb = _dbContext.Categories.ToList();
+        return _mapper.Map<List<CategoryNameDto>>(categoriesFromDb);
+    }
 }

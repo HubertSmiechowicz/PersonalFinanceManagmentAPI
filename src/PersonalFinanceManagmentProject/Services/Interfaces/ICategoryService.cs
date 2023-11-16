@@ -6,4 +6,6 @@ namespace PersonalFinanceManagmentProject.Services.Interfaces;
 public interface ICategoryService
 {
     void AddCategory(CategoryDto categoryDto);
+
+    List<CategoryNameDto> GetCategoryNames();
 }

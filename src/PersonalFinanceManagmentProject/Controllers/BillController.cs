@@ -47,5 +47,11 @@ namespace PersonalFinanceManagmentProject.Controllers
         {
             return Ok(_billService.ChangeBillName(id, name));
         }
+
+        [HttpGet("names")]
+        public ActionResult<List<BillNameDto>> GetBillNames()
+        {
+            return Ok(_billService.GetBillNames());
+        }
     }
 }

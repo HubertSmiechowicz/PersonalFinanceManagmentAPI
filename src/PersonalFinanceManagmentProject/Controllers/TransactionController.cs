@@ -17,9 +17,9 @@ public class TransactionController : Controller
     }
 
     [HttpGet]
-    public ActionResult<List<TransactionShortDto>> GetTransactions()
+    public ActionResult<List<TransactionShortDto>> GetTransactions([FromQuery] int pageNumber)
     {
-        return Ok(_transactionService.GetTransactions());
+        return Ok(_transactionService.GetTransactions(pageNumber));
     }
 
     [HttpPost]
@@ -33,5 +33,18 @@ public class TransactionController : Controller
     public ActionResult<TransactionExpandedDto> GetTransactionById([FromQuery] int id)
     {
         return Ok(_transactionService.GetTransactionById(id));
+    }
+
+    [HttpGet("page")]
+    public ActionResult<int> GetTransactionMaxPageNumber()
+    {
+        return Ok(_transactionService.GetTransactionMaxPageNumber());
+    }
+
+    [HttpDelete]
+    public ActionResult DeleteTransactionById([FromQuery] int id)
+    {
+        _transactionService.DeleteTransactionById(id);
+        return Ok();
     }
 }

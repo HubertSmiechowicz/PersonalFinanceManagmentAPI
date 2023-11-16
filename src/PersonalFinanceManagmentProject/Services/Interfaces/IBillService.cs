@@ -14,5 +14,7 @@ namespace PersonalFinanceManagmentProject.Services.Interfaces
         void DeleteBill(int id);
 
         BillExpandedDto ChangeBillName(int id, string name);
+
+        List<BillNameDto> GetBillNames();
     }
 }

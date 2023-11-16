@@ -17,10 +17,12 @@ public class TransactionService : ITransactionService
         _mapper = mapper;
     }
 
-    public List<TransactionShortDto> GetTransactions()
+    public List<TransactionShortDto> GetTransactions(int pageNumber)
     {
+        int pageSize = 6;
         var transactions = _dbContext.Transactions.ToList();
-        return transactions.Select(t =>
+        int numberOfPages = transactions.Count / pageSize;
+        var transactionDtos =  transactions.Select(t =>
         {
             var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == t.BillId);
             if (bill == null)
@@ -28,8 +30,11 @@ public class TransactionService : ITransactionService
                 throw new EntityNotFoundException(404, "Bill of id: " + t.BillId + " was not found!",
                     t.BillId);
             }
+            
             return new TransactionShortDto(t.Id, $"{t.Date.Value.Day}.{t.Date.Value.Month}.{t.Date.Value.Year}", bill.Name, Math.Round(t.Amount, 2));
         }).ToList();
+        pageNumber = CheckPageNumber(pageNumber, numberOfPages);
+        return transactionDtos.Skip(pageNumber * pageSize).Take(pageSize).ToList();
     }
 
     public void AddTransaction(TransactionAddDto transactionAddDto)
@@ -77,15 +82,33 @@ public class TransactionService : ITransactionService
                 transactionFromDb.CategoryId);
             
         }
+        var day = FormatDay(transactionFromDb);
         var transactionDto = new TransactionExpandedDto(
             transactionFromDb.Name,
-            $"{transactionFromDb.Date.Value.Day}.{transactionFromDb.Date.Value.Month}.{transactionFromDb.Date.Value.Year}",
+            $"{day}.{transactionFromDb.Date.Value.Month}.{transactionFromDb.Date.Value.Year}",
             GetStatus(transactionFromDb.Status),
             bill.Name,
-            transactionFromDb.Amount,
+            Math.Round(transactionFromDb.Amount, 2),
             category.Name
             );
         return transactionDto;
+    }
+
+    public int GetTransactionMaxPageNumber()
+    {
+        return _dbContext.Transactions.Count() / 6;
+    }
+
+    public void DeleteTransactionById(int id)
+    {
+        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        if (transaction == null)
+        {
+            throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
+        }
+
+        _dbContext.Transactions.Remove(transaction);
+        _dbContext.SaveChanges();
     }
     
     private static double CalculateAmount(Bill bill, Status status, double transactionAmount)
@@ -118,5 +141,31 @@ public class TransactionService : ITransactionService
         {
             throw new BadStatusException(400, "You gave wrong status!");
         }
+    }
+    
+    private static string FormatDay(Transaction transaction)
+    {
+        if (transaction.Date.Value.Day.ToString().Length == 1)
+        {
+            return '0' + transaction.Date.Value.Day.ToString();
+        }
+        else
+        {
+            return transaction.Date.Value.Day.ToString();
+        }
+    }
+    
+    private static int CheckPageNumber(int pageNumber, int numberOfPages)
+    {
+        if (pageNumber > numberOfPages)
+        {
+            pageNumber = numberOfPages;
+        }
+        else if (pageNumber < 0)
+        {
+            pageNumber = 0;
+        }
+
+        return pageNumber;
     }
 }

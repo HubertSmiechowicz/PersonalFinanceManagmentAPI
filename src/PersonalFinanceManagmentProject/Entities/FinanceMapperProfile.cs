@@ -20,6 +20,10 @@ namespace PersonalFinanceManagmentProject.Entities
             CreateMap<TransactionAddDto, Transaction>();
 
             CreateMap<CategoryDto, Category>();
+
+            CreateMap<Bill, BillNameDto>();
+
+            CreateMap<Category, CategoryNameDto>();
         }
     }
 }

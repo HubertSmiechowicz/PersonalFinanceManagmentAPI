@@ -22,4 +22,10 @@ public class CategoryController : Controller
         _categoryService.AddCategory(categoryDto);
         return Ok();
     }
+
+    [HttpGet("names")]
+    public ActionResult<List<CategoryNameDto>> GetCategoryNames()
+    {
+        return Ok(_categoryService.GetCategoryNames());
+    }
 }

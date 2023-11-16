@@ -57,5 +57,11 @@ namespace PersonalFinanceManagmentProject.Services
             _dbContext.SaveChanges();
             return _mapper.Map<BillExpandedDto>(_dbContext.Bills.Where(b => b.Id == id).Single());
         }
+
+        public List<BillNameDto> GetBillNames()
+        {
+            var billsFromDb = _dbContext.Bills.ToList();
+            return _mapper.Map<List<BillNameDto>>(billsFromDb);
+        }
     }
 }
