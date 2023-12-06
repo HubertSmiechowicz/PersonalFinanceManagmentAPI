@@ -9,5 +9,9 @@ public interface ITransactionService
     TransactionExpandedDto GetTransactionById(int id);
     int GetTransactionMaxPageNumber();
     void DeleteTransactionById(int id);
-
+    void UpdateTransactionName(int id, string name);
+    void UpdateTransactionStatus(int id, int status);
+    void UpdateTransactionBill(int id, int billId);
+    void UpdateTransactionAmount(int id, double amount);
+    void UpdateTransactionCategory(int id, int categoryId);
 }

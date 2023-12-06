@@ -47,4 +47,39 @@ public class TransactionController : Controller
         _transactionService.DeleteTransactionById(id);
         return Ok();
     }
+    
+    [HttpPatch("name")]
+    public ActionResult UpdateTransactionName(int id, string name)
+    {
+        _transactionService.UpdateTransactionName(id, name);
+        return Ok();
+    }
+
+    [HttpPatch("status")]
+    public ActionResult UpdateTransactionStatus(int id, int status)
+    {
+        _transactionService.UpdateTransactionStatus(id, status);
+        return Ok();
+    }
+    
+    [HttpPatch("bill")]
+    public ActionResult UpdateTransactionBill(int id, int billId)
+    {
+        _transactionService.UpdateTransactionBill(id, billId);
+        return Ok();
+    }
+
+    [HttpPatch("amount")]
+    public ActionResult UpdateTransactionAmount(int id, double amount)
+    {
+        _transactionService.UpdateTransactionAmount(id, amount);
+        return Ok();
+    }
+
+    [HttpPatch("category")]
+    public ActionResult UpdateTransactionCategory(int id, int categoryId)
+    {
+        _transactionService.UpdateTransactionCategory(id, categoryId);
+        return Ok();
+    }
 }

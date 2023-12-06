@@ -110,6 +110,62 @@ public class TransactionService : ITransactionService
         _dbContext.Transactions.Remove(transaction);
         _dbContext.SaveChanges();
     }
+
+    public void UpdateTransactionName(int id, string name)
+    {
+        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        if (transaction == null)
+        {
+            throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
+        }
+
+        transaction.Name = name;
+        _dbContext.SaveChanges();
+    }
+
+    public void UpdateTransactionStatus(int id, int status)
+    {
+        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        if (transaction == null)
+        {
+            throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
+        }
+        transaction.Status = (Status)status;
+        _dbContext.SaveChanges();
+    }
+
+    public void UpdateTransactionBill(int id, int billId)
+    {
+        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        if (transaction == null)
+        {
+            throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
+        }
+        transaction.BillId = billId;
+        _dbContext.SaveChanges();
+    }
+
+    public void UpdateTransactionAmount(int id, double amount)
+    {
+        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        if (transaction == null)
+        {
+            throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
+        }
+        transaction.Amount = amount;
+        _dbContext.SaveChanges();
+    }
+
+    public void UpdateTransactionCategory(int id, int categoryId)
+    {
+        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        if (transaction == null)
+        {
+            throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
+        }
+        transaction.CategoryId = categoryId;
+        _dbContext.SaveChanges();
+    }
     
     private static double CalculateAmount(Bill bill, Status status, double transactionAmount)
     {
@@ -145,14 +201,11 @@ public class TransactionService : ITransactionService
     
     private static string FormatDay(Transaction transaction)
     {
-        if (transaction.Date.Value.Day.ToString().Length == 1)
+        if (transaction.Date.Value.Day < 10)
         {
             return '0' + transaction.Date.Value.Day.ToString();
         }
-        else
-        {
-            return transaction.Date.Value.Day.ToString();
-        }
+        return transaction.Date.Value.Day.ToString();
     }
     
     private static int CheckPageNumber(int pageNumber, int numberOfPages)
