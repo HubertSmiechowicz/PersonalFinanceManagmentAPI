@@ -41,6 +41,8 @@ namespace PersonalFinanceManagmentProject
                 o.Filters.Add<EntityNotFoundExceptionFilter>();
                 o.Filters.Add<BadStatusExceptionFilter>();
                 o.Filters.Add<ParameterNullExceptionFilter>();
+                o.Filters.Add<DateNullExceptionFilter>();
+                o.Filters.Add<MonthOutOfRangeExceptionFilter>();
             });
             
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

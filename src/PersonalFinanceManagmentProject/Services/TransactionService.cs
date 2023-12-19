@@ -2,6 +2,7 @@
 using PersonalFinanceManagmentProject.Entities;
 using PersonalFinanceManagmentProject.Entities.Dtos.TransactionDto;
 using PersonalFinanceManagmentProject.Exceptions;
+using PersonalFinanceManagmentProject.Filters;
 using PersonalFinanceManagmentProject.Services.Interfaces;
 
 namespace PersonalFinanceManagmentProject.Services;
@@ -10,45 +11,109 @@ public class TransactionService : ITransactionService
 {
     private readonly PersonalFinanceManagmentDbContext _dbContext;
     private readonly IMapper _mapper;
+    private const int PageSize = 6;
 
     public TransactionService(PersonalFinanceManagmentDbContext dbContext, IMapper mapper)
     {
         _dbContext = dbContext;
         _mapper = mapper;
     }
+    
+    // get functions
 
     public List<TransactionShortDto> GetTransactions(int pageNumber)
     {
-        int pageSize = 6;
-        var transactions = _dbContext.Transactions.ToList();
-        int numberOfPages = transactions.Count / pageSize;
-        var transactionDtos =  transactions.Select(t =>
-        {
-            var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == t.BillId);
-            if (bill == null)
-            {
-                throw new EntityNotFoundException(404, "Bill of id: " + t.BillId + " was not found!",
-                    t.BillId);
-            }
-            
-            return new TransactionShortDto(t.Id, $"{t.Date.Value.Day}.{t.Date.Value.Month}.{t.Date.Value.Year}", bill.Name, Math.Round(t.Amount, 2));
-        }).ToList();
+        var transactionsFromDb = _dbContext.Transactions.ToList();
+        var numberOfPages = transactionsFromDb.Count / PageSize;
+        var transactionDtos = mapToTransactionShortDto(transactionsFromDb);
         pageNumber = CheckPageNumber(pageNumber, numberOfPages);
-        return transactionDtos.Skip(pageNumber * pageSize).Take(pageSize).ToList();
+        return transactionDtos.Skip(pageNumber * PageSize).Take(PageSize).ToList();
     }
+
+    public List<TransactionShortDto> GetTransactionByMonth(int pageNumber, int monthNumber)
+    {
+        if (monthNumber is > 12 or < 1)
+        {
+            throw new MonthOutOfRangeException(400, "Month of number: " + monthNumber + " is out of range!");
+        }
+
+        foreach (var t in _dbContext.Transactions)
+        {
+            if (t.Date is null)
+            {
+                throw new DateNullException(404, t.Id, "Date in transaction of id: " + t.Id + " was not found!"); 
+            }
+        }
+        var transactionsFromDb = _dbContext.Transactions.Where(t => t.Date.Value.Month == monthNumber).ToList();
+        var numberOfPages = transactionsFromDb.Count / PageSize;
+        var transactionDtos = mapToTransactionShortDto(transactionsFromDb);
+        pageNumber = CheckPageNumber(pageNumber, numberOfPages);
+        return transactionDtos.Skip(pageNumber * PageSize).Take(PageSize).ToList();
+    }
+    
+    public TransactionExpandedDto GetTransactionById(int id)
+    {
+        var transactionFromDb = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        if (transactionFromDb is null)
+        {
+            throw new EntityNotFoundException(404 ,"Transaction of id: " + id + " was not found!",
+                id);    
+        }
+        var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == transactionFromDb.BillId);
+        var category = _dbContext.Categories.FirstOrDefault(c => c.Id == transactionFromDb.CategoryId);
+        if (bill is null)
+        {
+            throw new EntityNotFoundException(404, "Bill of id: " + transactionFromDb.BillId + " was not found!",
+                transactionFromDb.BillId);
+        }
+        if (category is null)
+        {
+            throw new EntityNotFoundException(404, "Category of id: " + transactionFromDb.CategoryId + " was not found!",
+                transactionFromDb.CategoryId);
+            
+        }
+
+        if (transactionFromDb.Date is null)
+        {
+            throw new DateNullException(404, transactionFromDb.Id, "Date in transaction of id: " + transactionFromDb.Id + " was not found!");
+        }
+        
+        var day = FormatDay(transactionFromDb.Date.Value.Day);
+        var transactionDto = new TransactionExpandedDto(
+            transactionFromDb.Name,
+            $"{day}.{transactionFromDb.Date.Value.Month}.{transactionFromDb.Date.Value.Year}",
+            GetStatus(transactionFromDb.Status),
+            bill.Name,
+            Math.Round(transactionFromDb.Amount, 2),
+            category.Name
+        );
+        return transactionDto;
+    }
+
+    public int GetTransactionMaxPageNumber()
+    {
+        return _dbContext.Transactions.Count() / 6;
+    }
+
+    public int GetTransactionByMonthMaxPageNumber(int monthNumber)
+    {
+        return _dbContext.Transactions.Where(t => t.Date.Value.Month == monthNumber).ToList().Count / 6;
+    }
+    
+    // add functions
 
     public void AddTransaction(TransactionAddDto transactionAddDto)
     {
         var transaction = _mapper.Map<Transaction>(transactionAddDto);
         var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == transaction.BillId);
         var category = _dbContext.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
-        if (bill == null)
+        if (bill is null)
         {
             throw new EntityNotFoundException(404, "Bill of id: " + transaction.BillId + " was not found!",
                 transaction.BillId);
             
         }
-        if (category == null)
+        if (category is null)
         {
             throw new EntityNotFoundException(404, "Category of id: " + transaction.CategoryId + " was not found!",
                 transaction.CategoryId);
@@ -61,48 +126,12 @@ public class TransactionService : ITransactionService
         _dbContext.SaveChanges();
     }
     
-    public TransactionExpandedDto GetTransactionById(int id)
-    {
-        var transactionFromDb = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
-        if (transactionFromDb == null)
-        {
-            throw new EntityNotFoundException(404 ,"Transaction of id: " + id + " was not found!",
-                id);    
-        }
-        var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == transactionFromDb.BillId);
-        var category = _dbContext.Categories.FirstOrDefault(c => c.Id == transactionFromDb.CategoryId);
-        if (bill == null)
-        {
-            throw new EntityNotFoundException(404, "Bill of id: " + transactionFromDb.BillId + " was not found!",
-                transactionFromDb.BillId);
-        }
-        if (category == null)
-        {
-            throw new EntityNotFoundException(404, "Category of id: " + transactionFromDb.CategoryId + " was not found!",
-                transactionFromDb.CategoryId);
-            
-        }
-        var day = FormatDay(transactionFromDb);
-        var transactionDto = new TransactionExpandedDto(
-            transactionFromDb.Name,
-            $"{day}.{transactionFromDb.Date.Value.Month}.{transactionFromDb.Date.Value.Year}",
-            GetStatus(transactionFromDb.Status),
-            bill.Name,
-            Math.Round(transactionFromDb.Amount, 2),
-            category.Name
-            );
-        return transactionDto;
-    }
-
-    public int GetTransactionMaxPageNumber()
-    {
-        return _dbContext.Transactions.Count() / 6;
-    }
+    // delete functions
 
     public void DeleteTransactionById(int id)
     {
         var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
-        if (transaction == null)
+        if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
@@ -110,11 +139,13 @@ public class TransactionService : ITransactionService
         _dbContext.Transactions.Remove(transaction);
         _dbContext.SaveChanges();
     }
+    
+    // update functions
 
     public void UpdateTransactionName(int id, string name)
     {
         var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
-        if (transaction == null)
+        if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
@@ -126,7 +157,7 @@ public class TransactionService : ITransactionService
     public void UpdateTransactionStatus(int id, int status)
     {
         var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
-        if (transaction == null)
+        if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
@@ -137,7 +168,7 @@ public class TransactionService : ITransactionService
     public void UpdateTransactionBill(int id, int billId)
     {
         var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
-        if (transaction == null)
+        if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
@@ -148,7 +179,7 @@ public class TransactionService : ITransactionService
     public void UpdateTransactionAmount(int id, double amount)
     {
         var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
-        if (transaction == null)
+        if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
@@ -159,7 +190,7 @@ public class TransactionService : ITransactionService
     public void UpdateTransactionCategory(int id, int categoryId)
     {
         var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
-        if (transaction == null)
+        if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
@@ -167,13 +198,36 @@ public class TransactionService : ITransactionService
         _dbContext.SaveChanges();
     }
     
+    // private functions
+
+    private List<TransactionShortDto> mapToTransactionShortDto(List<Transaction> transactionsFromDb)
+    {
+        return transactionsFromDb.Select(t =>
+        {
+            var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == t.BillId);
+            if (bill is null)
+            {
+                throw new EntityNotFoundException(404, "Bill of id: " + t.BillId + " was not found!",
+                    t.BillId);
+            }
+
+            if (t.Date is null)
+            {
+                throw new DateNullException(404, t.Id, "Date in transaction of id: " + t.Id + " was not found!");
+            }
+
+            var day = FormatDay(t.Date.Value.Day);
+            return new TransactionShortDto(t.Id, $"{day}.{t.Date.Value.Month}.{t.Date.Value.Year}", bill.Name, Math.Round(t.Amount, 2));
+        }).ToList();
+    }
+    
     private static double CalculateAmount(Bill bill, Status status, double transactionAmount)
     {
-        if (status == Status.PAYMENTS)
+        if (status is Status.PAYMENTS)
         {
             return bill.Amount - transactionAmount;
         }
-        else if (status == Status.DEPOSITS)
+        else if (status is Status.DEPOSITS)
         {
             return bill.Amount + transactionAmount;
         }
@@ -185,11 +239,11 @@ public class TransactionService : ITransactionService
 
     private static string GetStatus(Status status)
     {
-        if (status == Status.DEPOSITS)
+        if (status is Status.DEPOSITS)
         {
             return "Deposit";
         }
-        else if (status == Status.PAYMENTS)
+        else if (status is Status.PAYMENTS)
         {
             return "Payment";
         }
@@ -199,13 +253,19 @@ public class TransactionService : ITransactionService
         }
     }
     
-    private static string FormatDay(Transaction transaction)
+    private string FormatDay(int day)
     {
-        if (transaction.Date.Value.Day < 10)
+        string formatDay;
+        if (day < 10)
         {
-            return '0' + transaction.Date.Value.Day.ToString();
+            formatDay =  '0' + day.ToString();
         }
-        return transaction.Date.Value.Day.ToString();
+        else
+        {
+            formatDay = day.ToString();
+        }
+
+        return formatDay;
     }
     
     private static int CheckPageNumber(int pageNumber, int numberOfPages)

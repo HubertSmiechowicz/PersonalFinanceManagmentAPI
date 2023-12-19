@@ -22,13 +22,13 @@ public class TransactionController : Controller
         return Ok(_transactionService.GetTransactions(pageNumber));
     }
 
-    [HttpPost]
-    public ActionResult AddTransaction([FromBody] TransactionAddDto transactionAddDto)
+    [HttpGet("month")]
+    public ActionResult<List<TransactionShortDto>> GetTransactionByMonth([FromQuery] int pageNumber,
+        [FromQuery] int monthNumber)
     {
-        _transactionService.AddTransaction(transactionAddDto);
-        return Ok();
+        return Ok(_transactionService.GetTransactionByMonth(pageNumber, monthNumber));
     }
-
+    
     [HttpGet("single")]
     public ActionResult<TransactionExpandedDto> GetTransactionById([FromQuery] int id)
     {
@@ -39,6 +39,19 @@ public class TransactionController : Controller
     public ActionResult<int> GetTransactionMaxPageNumber()
     {
         return Ok(_transactionService.GetTransactionMaxPageNumber());
+    }
+
+    [HttpGet("page/month")]
+    public ActionResult<int> GetTransactionByMonthMaxPageNumber(int monthNumber)
+    {
+        return Ok(_transactionService.GetTransactionByMonthMaxPageNumber(monthNumber));
+    }
+
+    [HttpPost]
+    public ActionResult AddTransaction([FromBody] TransactionAddDto transactionAddDto)
+    {
+        _transactionService.AddTransaction(transactionAddDto);
+        return Ok();
     }
 
     [HttpDelete]

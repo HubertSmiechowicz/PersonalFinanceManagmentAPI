@@ -5,9 +5,11 @@ namespace PersonalFinanceManagmentProject.Services.Interfaces;
 public interface ITransactionService
 {
     List<TransactionShortDto> GetTransactions(int pageNumber);
-    void AddTransaction(TransactionAddDto transactionAddDto);
+    List<TransactionShortDto> GetTransactionByMonth(int pageNumber, int month);
     TransactionExpandedDto GetTransactionById(int id);
     int GetTransactionMaxPageNumber();
+    int GetTransactionByMonthMaxPageNumber(int monthNumber);
+    void AddTransaction(TransactionAddDto transactionAddDto);
     void DeleteTransactionById(int id);
     void UpdateTransactionName(int id, string name);
     void UpdateTransactionStatus(int id, int status);
