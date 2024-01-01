@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using PersonalFinanceManagmentProject.Entities;
 using PersonalFinanceManagmentProject.Entities.Dtos.TransactionDto;
 using PersonalFinanceManagmentProject.Exceptions;
@@ -25,7 +26,7 @@ public class TransactionService : ITransactionService
     {
         var transactionsFromDb = _dbContext.Transactions.ToList();
         var numberOfPages = transactionsFromDb.Count / PageSize;
-        var transactionDtos = mapToTransactionShortDto(transactionsFromDb);
+        var transactionDtos = MapToTransactionShortDto(transactionsFromDb);
         pageNumber = CheckPageNumber(pageNumber, numberOfPages);
         return transactionDtos.Skip(pageNumber * PageSize).Take(PageSize).ToList();
     }
@@ -46,7 +47,7 @@ public class TransactionService : ITransactionService
         }
         var transactionsFromDb = _dbContext.Transactions.Where(t => t.Date.Value.Month == monthNumber).ToList();
         var numberOfPages = transactionsFromDb.Count / PageSize;
-        var transactionDtos = mapToTransactionShortDto(transactionsFromDb);
+        var transactionDtos = MapToTransactionShortDto(transactionsFromDb);
         pageNumber = CheckPageNumber(pageNumber, numberOfPages);
         return transactionDtos.Skip(pageNumber * PageSize).Take(PageSize).ToList();
     }
@@ -105,24 +106,15 @@ public class TransactionService : ITransactionService
     public void AddTransaction(TransactionAddDto transactionAddDto)
     {
         var transaction = _mapper.Map<Transaction>(transactionAddDto);
-        var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == transaction.BillId);
         var category = _dbContext.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
-        if (bill is null)
-        {
-            throw new EntityNotFoundException(404, "Bill of id: " + transaction.BillId + " was not found!",
-                transaction.BillId);
-            
-        }
         if (category is null)
         {
             throw new EntityNotFoundException(404, "Category of id: " + transaction.CategoryId + " was not found!",
                 transaction.CategoryId);
-            
+
         }
+        CalculateAmount(transaction.BillId, transaction.Status, transaction.Amount);
         _dbContext.Transactions.Add(transaction);
-        var newBillAmount = CalculateAmount(bill, transaction.Status, transaction.Amount);
-        bill.Amount = newBillAmount;
-        bill.LastUpdateDate = DateTime.Now;
         _dbContext.SaveChanges();
     }
     
@@ -135,7 +127,7 @@ public class TransactionService : ITransactionService
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
-
+        CalculateAmount(transaction.BillId, Status.PAYMENTS, transaction.Amount);
         _dbContext.Transactions.Remove(transaction);
         _dbContext.SaveChanges();
     }
@@ -162,16 +154,32 @@ public class TransactionService : ITransactionService
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
         transaction.Status = (Status)status;
+        CalculateAmount(transaction.BillId, (Status)status, transaction.Amount * 2);
         _dbContext.SaveChanges();
     }
 
     public void UpdateTransactionBill(int id, int billId)
     {
         var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        var newBill = _dbContext.Bills.FirstOrDefault(b => b.Id == billId);
         if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
+        var oldBillId = transaction.BillId;
+        if (newBill is null)
+        {
+            throw new EntityNotFoundException(404, "Bill of id: " + billId + " was not found!");
+        }
+        if (transaction.Status == Status.PAYMENTS)
+        {
+            CalculateAmount(oldBillId, Status.DEPOSITS, transaction.Amount);
+        }
+        else
+        {
+            CalculateAmount(oldBillId, Status.PAYMENTS, transaction.Amount);
+        }
+        CalculateAmount(newBill.Id, transaction.Status, transaction.Amount);
         transaction.BillId = billId;
         _dbContext.SaveChanges();
     }
@@ -182,6 +190,17 @@ public class TransactionService : ITransactionService
         if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
+        }
+
+        if (transaction.Status == Status.PAYMENTS)
+        {
+            CalculateAmount(transaction.BillId, Status.DEPOSITS, transaction.Amount);
+            CalculateAmount(transaction.BillId, Status.PAYMENTS, amount);
+        }
+        else
+        {
+            CalculateAmount(transaction.BillId, Status.PAYMENTS, transaction.Amount);
+            CalculateAmount(transaction.BillId, Status.DEPOSITS, amount);
         }
         transaction.Amount = amount;
         _dbContext.SaveChanges();
@@ -200,7 +219,8 @@ public class TransactionService : ITransactionService
     
     // private functions
 
-    private List<TransactionShortDto> mapToTransactionShortDto(List<Transaction> transactionsFromDb)
+
+    private List<TransactionShortDto> MapToTransactionShortDto(List<Transaction> transactionsFromDb)
     {
         return transactionsFromDb.Select(t =>
         {
@@ -221,20 +241,35 @@ public class TransactionService : ITransactionService
         }).ToList();
     }
     
-    private static double CalculateAmount(Bill bill, Status status, double transactionAmount)
+    private void CalculateAmount(int billId, Status status, double transactionAmount)
     {
+        double newBillAmount;
+        var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == billId);
+
+        if (bill is null)
+        {
+            throw new EntityNotFoundException(404, "Bill of id: " + billId + " was not found!",
+                billId);
+        }
+
         if (status is Status.PAYMENTS)
         {
-            return bill.Amount - transactionAmount;
+            if (transactionAmount > bill.Amount)
+            {
+                throw new AmountOutOfRangeException(400, "Amount " + transactionAmount + " is greater than the current bill amount which is " + bill.Amount + "!");
+            }
+            newBillAmount = bill.Amount -= transactionAmount;
         }
         else if (status is Status.DEPOSITS)
         {
-            return bill.Amount + transactionAmount;
+            newBillAmount = bill.Amount + transactionAmount;
         }
         else
         {
             throw new BadStatusException(400, "You gave wrong status!");
         }
+        bill.Amount = newBillAmount;
+        bill.LastUpdateDate = DateTime.Now;
     }
 
     private static string GetStatus(Status status)

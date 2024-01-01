@@ -43,6 +43,7 @@ namespace PersonalFinanceManagmentProject
                 o.Filters.Add<ParameterNullExceptionFilter>();
                 o.Filters.Add<DateNullExceptionFilter>();
                 o.Filters.Add<MonthOutOfRangeExceptionFilter>();
+                o.Filters.Add<AmountOutOfRangeExceptionFilter>();
             });
             
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

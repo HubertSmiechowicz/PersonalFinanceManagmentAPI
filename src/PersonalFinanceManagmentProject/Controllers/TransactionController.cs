@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using PersonalFinanceManagmentProject.Entities;
 using PersonalFinanceManagmentProject.Entities.Dtos.TransactionDto;
 using PersonalFinanceManagmentProject.Services.Interfaces;
@@ -76,9 +77,9 @@ public class TransactionController : Controller
     }
     
     [HttpPatch("bill")]
-    public ActionResult UpdateTransactionBill(int id, int billId)
+    public ActionResult UpdateTransactionBill(int id, int bill)
     {
-        _transactionService.UpdateTransactionBill(id, billId);
+        _transactionService.UpdateTransactionBill(id, bill);
         return Ok();
     }
 
@@ -90,9 +91,9 @@ public class TransactionController : Controller
     }
 
     [HttpPatch("category")]
-    public ActionResult UpdateTransactionCategory(int id, int categoryId)
+    public ActionResult UpdateTransactionCategory(int id, int category)
     {
-        _transactionService.UpdateTransactionCategory(id, categoryId);
+        _transactionService.UpdateTransactionCategory(id, category);
         return Ok();
     }
 }

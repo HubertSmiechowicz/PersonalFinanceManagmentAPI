@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PersonalFinanceManagmentProject\PersonalFinanceManagmentProject.csproj" />
+    <ProjectReference Include="..\PersonalFinanceManagmentProject\PersonalFinanceManagment.csproj" />
   </ItemGroup>
 
 </Project>
