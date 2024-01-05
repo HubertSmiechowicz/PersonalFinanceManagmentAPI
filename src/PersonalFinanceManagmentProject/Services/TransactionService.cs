@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceManagmentProject.Entities;
 using PersonalFinanceManagmentProject.Entities.Dtos.TransactionDto;
 using PersonalFinanceManagmentProject.Exceptions;
 using PersonalFinanceManagmentProject.Filters;
 using PersonalFinanceManagmentProject.Services.Interfaces;
+using System.Runtime.CompilerServices;
 
 namespace PersonalFinanceManagmentProject.Services;
 
@@ -22,16 +25,16 @@ public class TransactionService : ITransactionService
     
     // get functions
 
-    public List<TransactionShortDto> GetTransactions(int pageNumber)
+    public async Task<List<TransactionShortDto>> GetTransactions(int pageNumber)
     {
-        var transactionsFromDb = _dbContext.Transactions.ToList();
-        var numberOfPages = transactionsFromDb.Count / PageSize;
+        var transactionsFromDb = await _dbContext.Transactions.ToListAsync();
         var transactionDtos = MapToTransactionShortDto(transactionsFromDb);
+        var numberOfPages = transactionsFromDb.Count / PageSize;
         pageNumber = CheckPageNumber(pageNumber, numberOfPages);
         return transactionDtos.Skip(pageNumber * PageSize).Take(PageSize).ToList();
     }
 
-    public List<TransactionShortDto> GetTransactionByMonth(int pageNumber, int monthNumber)
+    public async Task<List<TransactionShortDto>> GetTransactionByMonth(int pageNumber, int monthNumber)
     {
         if (monthNumber is > 12 or < 1)
         {
@@ -45,23 +48,23 @@ public class TransactionService : ITransactionService
                 throw new DateNullException(404, t.Id, "Date in transaction of id: " + t.Id + " was not found!"); 
             }
         }
-        var transactionsFromDb = _dbContext.Transactions.Where(t => t.Date.Value.Month == monthNumber).ToList();
-        var numberOfPages = transactionsFromDb.Count / PageSize;
+        var transactionsFromDb = await _dbContext.Transactions.Where(t => t.Date.Value.Month == monthNumber).ToListAsync();
         var transactionDtos = MapToTransactionShortDto(transactionsFromDb);
+        var numberOfPages = transactionsFromDb.Count / PageSize;
         pageNumber = CheckPageNumber(pageNumber, numberOfPages);
         return transactionDtos.Skip(pageNumber * PageSize).Take(PageSize).ToList();
     }
     
-    public TransactionExpandedDto GetTransactionById(int id)
+    public async Task<TransactionExpandedDto> GetTransactionById(int id)
     {
-        var transactionFromDb = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        var transactionFromDb = await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
         if (transactionFromDb is null)
         {
             throw new EntityNotFoundException(404 ,"Transaction of id: " + id + " was not found!",
                 id);    
         }
-        var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == transactionFromDb.BillId);
-        var category = _dbContext.Categories.FirstOrDefault(c => c.Id == transactionFromDb.CategoryId);
+        var bill = await _dbContext.Bills.FirstOrDefaultAsync(b => b.Id == transactionFromDb.BillId);
+        var category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == transactionFromDb.CategoryId);
         if (bill is null)
         {
             throw new EntityNotFoundException(404, "Bill of id: " + transactionFromDb.BillId + " was not found!",
@@ -91,77 +94,78 @@ public class TransactionService : ITransactionService
         return transactionDto;
     }
 
-    public int GetTransactionMaxPageNumber()
+    public async Task<int> GetTransactionMaxPageNumber()
     {
-        return _dbContext.Transactions.Count() / 6;
+        return await _dbContext.Transactions.CountAsync() / 6;
     }
 
-    public int GetTransactionByMonthMaxPageNumber(int monthNumber)
+    public async Task<int> GetTransactionByMonthMaxPageNumber(int monthNumber)
     {
-        return _dbContext.Transactions.Where(t => t.Date.Value.Month == monthNumber).ToList().Count / 6;
+        var transactions = await _dbContext.Transactions.ToListAsync();
+        return transactions.Where(t => t.Date.Value.Month == monthNumber).ToList().Count / 6;
     }
     
     // add functions
 
-    public void AddTransaction(TransactionAddDto transactionAddDto)
+    public async Task AddTransaction(TransactionAddDto transactionAddDto)
     {
         var transaction = _mapper.Map<Transaction>(transactionAddDto);
-        var category = _dbContext.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
+        var category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == transaction.CategoryId);
         if (category is null)
         {
             throw new EntityNotFoundException(404, "Category of id: " + transaction.CategoryId + " was not found!",
                 transaction.CategoryId);
 
         }
-        CalculateAmount(transaction.BillId, transaction.Status, transaction.Amount);
-        _dbContext.Transactions.Add(transaction);
-        _dbContext.SaveChanges();
+        await CalculateAmount(transaction.BillId, transaction.Status, transaction.Amount);
+        await _dbContext.Transactions.AddAsync(transaction);
+        await _dbContext.SaveChangesAsync();
     }
     
     // delete functions
 
-    public void DeleteTransactionById(int id)
+    public async Task DeleteTransactionById(int id)
     {
-        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        var transaction = await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
         if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
-        CalculateAmount(transaction.BillId, Status.PAYMENTS, transaction.Amount);
+        await CalculateAmount(transaction.BillId, Status.PAYMENTS, transaction.Amount);
         _dbContext.Transactions.Remove(transaction);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
     
     // update functions
 
-    public void UpdateTransactionName(int id, string name)
+    public async Task UpdateTransactionName(int id, string name)
     {
-        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        var transaction = await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
         if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
 
         transaction.Name = name;
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
 
-    public void UpdateTransactionStatus(int id, int status)
+    public async Task UpdateTransactionStatus(int id, int status)
     {
-        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        var transaction = await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
         if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
         transaction.Status = (Status)status;
-        CalculateAmount(transaction.BillId, (Status)status, transaction.Amount * 2);
-        _dbContext.SaveChanges();
+        await CalculateAmount(transaction.BillId, (Status)status, transaction.Amount * 2);
+        await _dbContext.SaveChangesAsync();
     }
 
-    public void UpdateTransactionBill(int id, int billId)
+    public async Task UpdateTransactionBill(int id, int billId)
     {
-        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
-        var newBill = _dbContext.Bills.FirstOrDefault(b => b.Id == billId);
+        var transaction = await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
+        var newBill = await _dbContext.Bills.FirstOrDefaultAsync(b => b.Id == billId);
         if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
@@ -173,20 +177,20 @@ public class TransactionService : ITransactionService
         }
         if (transaction.Status == Status.PAYMENTS)
         {
-            CalculateAmount(oldBillId, Status.DEPOSITS, transaction.Amount);
+            await CalculateAmount(oldBillId, Status.DEPOSITS, transaction.Amount);
         }
         else
         {
-            CalculateAmount(oldBillId, Status.PAYMENTS, transaction.Amount);
+            await CalculateAmount(oldBillId, Status.PAYMENTS, transaction.Amount);
         }
-        CalculateAmount(newBill.Id, transaction.Status, transaction.Amount);
+        await CalculateAmount(newBill.Id, transaction.Status, transaction.Amount);
         transaction.BillId = billId;
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
 
-    public void UpdateTransactionAmount(int id, double amount)
+    public async Task UpdateTransactionAmount(int id, double amount)
     {
-        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        var transaction = await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
         if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
@@ -194,31 +198,30 @@ public class TransactionService : ITransactionService
 
         if (transaction.Status == Status.PAYMENTS)
         {
-            CalculateAmount(transaction.BillId, Status.DEPOSITS, transaction.Amount);
-            CalculateAmount(transaction.BillId, Status.PAYMENTS, amount);
+            await CalculateAmount(transaction.BillId, Status.DEPOSITS, transaction.Amount);
+            await CalculateAmount(transaction.BillId, Status.PAYMENTS, amount);
         }
         else
         {
-            CalculateAmount(transaction.BillId, Status.PAYMENTS, transaction.Amount);
-            CalculateAmount(transaction.BillId, Status.DEPOSITS, amount);
+            await CalculateAmount(transaction.BillId, Status.PAYMENTS, transaction.Amount);
+            await CalculateAmount(transaction.BillId, Status.DEPOSITS, amount);
         }
         transaction.Amount = amount;
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
 
-    public void UpdateTransactionCategory(int id, int categoryId)
+    public async Task UpdateTransactionCategory(int id, int categoryId)
     {
-        var transaction = _dbContext.Transactions.FirstOrDefault(t => t.Id == id);
+        var transaction = await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
         if (transaction is null)
         {
             throw new EntityNotFoundException(404, "Transaction of id: " + id + " was not found!");
         }
         transaction.CategoryId = categoryId;
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
     
     // private functions
-
 
     private List<TransactionShortDto> MapToTransactionShortDto(List<Transaction> transactionsFromDb)
     {
@@ -230,21 +233,20 @@ public class TransactionService : ITransactionService
                 throw new EntityNotFoundException(404, "Bill of id: " + t.BillId + " was not found!",
                     t.BillId);
             }
-
             if (t.Date is null)
             {
                 throw new DateNullException(404, t.Id, "Date in transaction of id: " + t.Id + " was not found!");
             }
-
             var day = FormatDay(t.Date.Value.Day);
             return new TransactionShortDto(t.Id, $"{day}.{t.Date.Value.Month}.{t.Date.Value.Year}", bill.Name, Math.Round(t.Amount, 2));
         }).ToList();
     }
-    
-    private void CalculateAmount(int billId, Status status, double transactionAmount)
+
+
+    private async Task CalculateAmount(int billId, Status status, double transactionAmount)
     {
         double newBillAmount;
-        var bill = _dbContext.Bills.FirstOrDefault(b => b.Id == billId);
+        var bill = await _dbContext.Bills.FirstOrDefaultAsync(b => b.Id == billId);
 
         if (bill is null)
         {
@@ -293,7 +295,7 @@ public class TransactionService : ITransactionService
         string formatDay;
         if (day < 10)
         {
-            formatDay =  '0' + day.ToString();
+            formatDay = '0' + day.ToString();
         }
         else
         {

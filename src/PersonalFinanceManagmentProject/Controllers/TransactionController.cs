@@ -18,82 +18,82 @@ public class TransactionController : Controller
     }
 
     [HttpGet]
-    public ActionResult<List<TransactionShortDto>> GetTransactions([FromQuery] int pageNumber)
+    public async Task<ActionResult<List<TransactionShortDto>>> GetTransactions([FromQuery] int pageNumber)
     {
-        return Ok(_transactionService.GetTransactions(pageNumber));
+        return Ok(await _transactionService.GetTransactions(pageNumber));
     }
 
     [HttpGet("month")]
-    public ActionResult<List<TransactionShortDto>> GetTransactionByMonth([FromQuery] int pageNumber,
+    public async Task<ActionResult<List<TransactionShortDto>>> GetTransactionByMonth([FromQuery] int pageNumber,
         [FromQuery] int monthNumber)
     {
-        return Ok(_transactionService.GetTransactionByMonth(pageNumber, monthNumber));
+        return Ok(await _transactionService.GetTransactionByMonth(pageNumber, monthNumber));
     }
     
     [HttpGet("single")]
-    public ActionResult<TransactionExpandedDto> GetTransactionById([FromQuery] int id)
+    public async Task<ActionResult<TransactionExpandedDto>> GetTransactionById([FromQuery] int id)
     {
-        return Ok(_transactionService.GetTransactionById(id));
+        return Ok(await _transactionService.GetTransactionById(id));
     }
 
     [HttpGet("page")]
-    public ActionResult<int> GetTransactionMaxPageNumber()
+    public async Task<ActionResult<int>> GetTransactionMaxPageNumber()
     {
-        return Ok(_transactionService.GetTransactionMaxPageNumber());
+        return Ok(await _transactionService.GetTransactionMaxPageNumber());
     }
 
     [HttpGet("page/month")]
-    public ActionResult<int> GetTransactionByMonthMaxPageNumber(int monthNumber)
+    public async Task<ActionResult<int>> GetTransactionByMonthMaxPageNumber(int monthNumber)
     {
-        return Ok(_transactionService.GetTransactionByMonthMaxPageNumber(monthNumber));
+        return Ok(await _transactionService.GetTransactionByMonthMaxPageNumber(monthNumber));
     }
 
     [HttpPost]
-    public ActionResult AddTransaction([FromBody] TransactionAddDto transactionAddDto)
+    public async Task<ActionResult> AddTransaction([FromBody] TransactionAddDto transactionAddDto)
     {
-        _transactionService.AddTransaction(transactionAddDto);
+        await _transactionService.AddTransaction(transactionAddDto);
         return Ok();
     }
 
     [HttpDelete]
-    public ActionResult DeleteTransactionById([FromQuery] int id)
+    public async Task<ActionResult> DeleteTransactionById([FromQuery] int id)
     {
-        _transactionService.DeleteTransactionById(id);
+        await _transactionService.DeleteTransactionById(id);
         return Ok();
     }
     
     [HttpPatch("name")]
-    public ActionResult UpdateTransactionName(int id, string name)
+    public async Task<ActionResult> UpdateTransactionName(int id, string name)
     {
-        _transactionService.UpdateTransactionName(id, name);
+        await _transactionService.UpdateTransactionName(id, name);
         return Ok();
     }
 
     [HttpPatch("status")]
-    public ActionResult UpdateTransactionStatus(int id, int status)
+    public async Task<ActionResult> UpdateTransactionStatus(int id, int status)
     {
-        _transactionService.UpdateTransactionStatus(id, status);
+        await _transactionService.UpdateTransactionStatus(id, status);
         return Ok();
     }
     
     [HttpPatch("bill")]
-    public ActionResult UpdateTransactionBill(int id, int bill)
+    public async Task<ActionResult> UpdateTransactionBill(int id, int bill)
     {
-        _transactionService.UpdateTransactionBill(id, bill);
+        await _transactionService.UpdateTransactionBill(id, bill);
         return Ok();
     }
 
     [HttpPatch("amount")]
-    public ActionResult UpdateTransactionAmount(int id, double amount)
+    public async Task<ActionResult> UpdateTransactionAmount(int id, double amount)
     {
-        _transactionService.UpdateTransactionAmount(id, amount);
+        await _transactionService.UpdateTransactionAmount(id, amount);
         return Ok();
     }
 
     [HttpPatch("category")]
-    public ActionResult UpdateTransactionCategory(int id, int category)
+    public async Task<ActionResult> UpdateTransactionCategory(int id, int category)
     {
-        _transactionService.UpdateTransactionCategory(id, category);
+        await _transactionService.UpdateTransactionCategory(id, category);
         return Ok();
     }
 }

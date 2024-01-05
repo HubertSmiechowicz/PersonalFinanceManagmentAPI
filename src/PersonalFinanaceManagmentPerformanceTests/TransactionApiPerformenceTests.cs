@@ -21,7 +21,7 @@ namespace PersonalFinanaceManagment.Tests.Performance
         }
 
         [Fact]
-        public void GetTransactionsShouldHandleAtLeast100RequestPerSeconds()
+        public void GetTransactionsShouldHandleAtLeast1000RequestPerSeconds()
         {
             const string url = "http://localhost:5074/transaction?pageNumber=0";
 
@@ -40,7 +40,7 @@ namespace PersonalFinanaceManagment.Tests.Performance
                 }
             })
                 .WithWarmUpDuration(TimeSpan.FromSeconds(5))
-                .WithLoadSimulations(LoadSimulation.NewKeepConstant(10000, TimeSpan.FromSeconds(5)));
+                .WithLoadSimulations(LoadSimulation.NewKeepConstant(1000, TimeSpan.FromSeconds(5)));
 
             var stats = NBomberRunner
                 .RegisterScenarios(getTransactionScenario)

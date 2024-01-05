@@ -1,19 +1,20 @@
 ﻿using PersonalFinanceManagmentProject.Entities.Dtos.TransactionDto;
+using PersonalFinanceManagmentProject.Entities;
 
 namespace PersonalFinanceManagmentProject.Services.Interfaces;
 
 public interface ITransactionService
 {
-    List<TransactionShortDto> GetTransactions(int pageNumber);
-    List<TransactionShortDto> GetTransactionByMonth(int pageNumber, int month);
-    TransactionExpandedDto GetTransactionById(int id);
-    int GetTransactionMaxPageNumber();
-    int GetTransactionByMonthMaxPageNumber(int monthNumber);
-    void AddTransaction(TransactionAddDto transactionAddDto);
-    void DeleteTransactionById(int id);
-    void UpdateTransactionName(int id, string name);
-    void UpdateTransactionStatus(int id, int status);
-    void UpdateTransactionBill(int id, int billId);
-    void UpdateTransactionAmount(int id, double amount);
-    void UpdateTransactionCategory(int id, int categoryId);
+    Task<List<TransactionShortDto>> GetTransactions(int pageNumber);
+    Task<List<TransactionShortDto>> GetTransactionByMonth(int pageNumber, int month);
+    Task<TransactionExpandedDto> GetTransactionById(int id);
+    Task<int> GetTransactionMaxPageNumber();
+    Task<int> GetTransactionByMonthMaxPageNumber(int monthNumber);
+    Task AddTransaction(TransactionAddDto transactionAddDto);
+    Task DeleteTransactionById(int id);
+    Task UpdateTransactionName(int id, string name);
+    Task UpdateTransactionStatus(int id, int status);
+    Task UpdateTransactionBill(int id, int billId);
+    Task UpdateTransactionAmount(int id, double amount);
+    Task UpdateTransactionCategory(int id, int categoryId);
 }
